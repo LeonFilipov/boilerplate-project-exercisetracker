@@ -96,6 +96,9 @@ app.post('/api/users/:_id/exercises', (req, res) => {
 app.get('/api/users/:_id/logs', (req, res) => {
   const user = users_database.get(req.params._id)
 
+  console.log(req.params._id)
+  console.log(req.query.from, req.query.to, req.query.limit)
+
   if (!user) {
     return res
       .send({ error: 'user not found' })
@@ -106,10 +109,12 @@ app.get('/api/users/:_id/logs', (req, res) => {
 
   const to = req.query.to ? new Date(req.query.to) : new Date()
   
-  const limit = req.query.limit ? parseInt(req.query.limit) : undefined
+  const limit = req.query.limit ? req.query.limit : undefined
 
   const exercises = exercises_database.get(user._id) || []
-
+  
+  console.log("All exercises:", exercises)
+  
   let filteredExercises = exercises.filter(exercise => {
     return exercise.date >= from && exercise.date <= to
   })
@@ -122,12 +127,14 @@ app.get('/api/users/:_id/logs', (req, res) => {
     _id: user._id,
     username: user.username,
     count: exercises.length,
-    log: exercises.map(exercise => ({
+    log: filteredExercises.map(exercise => ({
       description: exercise.description,
       duration: exercise.duration,
       date: exercise.date.toDateString(),
     })),
   }
+
+  console.log("reponse:" , response);
 
   res
     .send(response)
